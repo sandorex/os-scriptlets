@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# microdnf - script to use microdnf on immutable ostree system using podman
+#
+# metadata: experimental nopermdamage
+
+set -eu
+
+# TODO: is this only way to detect rpm-ostree usroverlay / ostree admin unlock
+if ! grep -qi 'Unlocked: Development'; then
+    cat <<EOF
+The system is still read-only
+Please run 'rpm-ostree usroverlay' or 'ostree admin unlock' first
+EOF
+    exit 1
+fi
+
+IMAGE=registry.fedoraproject.org/fedora-minimal
+
+podman run --privileged -v /:/hostroot "$IMAGE" microdnf --installroot=/hostroot "$@"
+

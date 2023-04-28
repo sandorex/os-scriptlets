@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# install-rpmfusion - sets up rpmfusion on ostree based system
+#
+# metadata: experimental nopermdamage
+
+set -eu
+
+# pin current deployment
+sudo ostree admin pin 0
+
+# install current package without reboot
+sudo rpm-ostree install --apply-live \
+        https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-"$(rpm -E %fedora)".noarch.rpm \
+        https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-"$(rpm -E %fedora)".noarch.rpm
+
+# reinstall the repositories from themselves so they are layered packages not
+# local packages
+sudo rpm-ostree update --uninstall rpmfusion-free-release \
+                       --uninstall rpmfusion-nonfree-release \
+                       --install rpmfusion-free-release \
+                       --install rpmfusion-nonfree-release
+
+# reboot is required
+# shellcheck disable=SC2046
+printf '%.s-' $(seq 1 $(tput cols))
+
+echo "Please reboot the system to complete the installation"
+
+# shellcheck disable=SC2046
+printf '%.s-' $(seq 1 $(tput cols))
+
