@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# dnf - script to use dnf on immutable ostree system using podman container
+#
+# metadata: experimental nopermdamage
+
+set -eu
+
+if [[ "$(id -u)" -ne 0 ]]; then
+    exec sudo "$0" "$@"
+fi
+
+# TODO: is this only way to detect ostree admin unlock?
+if ! ostree admin status | grep -qi 'Unlocked: Development'; then
+    cat <<EOF
+The system is still read-only
+Please run 'ostree admin unlock' first
+EOF
+    exit 1
+fi
+
+# the image is around 50mb
+IMAGE=registry.fedoraproject.org/fedora-minimal
+
+# for some reason dnf is not symlinked to dnf5
+podman run --privileged -v /:/hostroot "$IMAGE" dnf5 --installroot=/hostroot "$@"
+
