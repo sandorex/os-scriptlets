@@ -22,6 +22,8 @@ fi
 # the image is around 50mb
 IMAGE=registry.fedoraproject.org/fedora-minimal
 
+mkdir -p /tmp/dnf-cache
+
 # for some reason dnf is not symlinked to dnf5
-podman run --privileged -v /:/hostroot "$IMAGE" dnf5 --installroot=/hostroot "$@"
+podman run --rm --privileged -v /:/hostroot -v /tmp/dnf-cache:/var/cache/dnf -it "$IMAGE" dnf5 --installroot=/hostroot "$@"
 
